@@ -60,7 +60,7 @@ boolean Crane::moveTo(float x, float y, int t = 1) {
     targetAngle1 = acos(xPOI / length1);
 
     // The angle servo2 should be at such that the end of the crane is at (x, y)
-    targetAngle2 = atan((y - yPOI) / (x - xPOI)) - targetAngle1;
+    targetAngle2 = atan2(y - yPOI, x - xPOI) - targetAngle1;
 
     moveDuration = t;
     return true;
@@ -87,8 +87,7 @@ void setup() {
 //    crane.moveTo(20, 10);
     Serial.begin(9600);
     long start = millis();
-    Serial.println("baslls");
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10000; i++) {
       crane.moveTo(20, 10);
     }
     Serial.println(millis() - start);
