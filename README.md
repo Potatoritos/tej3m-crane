@@ -1,2 +1,4 @@
 # tej3m-crane
-TEJ3M Final project
+TEJ3M final project
+
+A robot arm that stacks blocks.
