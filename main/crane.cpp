@@ -21,7 +21,7 @@ boolean Crane::moveTo(float x, float y, int t /*= 1*/) {
 
     const float discriminant = b*b - 4*a*c;
 
-    // If there are no real solutions, the move is impossible
+    // If there is no point of intersection
     if (discriminant < 0) {
         return false;
     }
@@ -39,13 +39,20 @@ boolean Crane::moveTo(float x, float y, int t /*= 1*/) {
     targetAngleElbow = 180 - (targetAngleShoulder - targetAngleElbow) - 12;
     targetAngleShoulder = targetAngleShoulder - 20;
     
-    moveDuration = t;
+    moveRemainingSteps = 8 * t;
+    moveDX = x - posX_;
+    moveDY = y - posY_;
+
+    
+    posX_ = x;
+    posY_ = y;
     return true;
 }
 
 boolean Crane::rotate(float angle) {
     if (0 <= angle && angle <= 180) {
         targetRotation = angle;
+        rotation_ = angle;
         return true;
     }
     return false;
@@ -58,9 +65,29 @@ void Crane::attachServos(int pinRotation, int pinShoulder, int pinElbow) {
     servoElbow.attach(pinElbow);
 }
 
+
+
 void Crane::update() {
     // Write to the servos
     servoShoulder.write(targetAngleShoulder);
     servoElbow.write(targetAngleElbow);
     servoRotation.write(targetRotation);
+}
+
+void Crane::updateUntilMoveDone() {
+    while (moveRemainingSteps) {
+        update();
+    }
+}
+
+float Crane::posX() {
+    return posX_;
+}
+
+float Crane::posY() {
+    return posY_;
+}
+
+float Crane::rotation() {
+    return rotation_;
 }

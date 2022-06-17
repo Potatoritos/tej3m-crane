@@ -1,12 +1,12 @@
 #include "button.h"
 
-boolean Button::setPinMode() {
+void Button::setPinMode() {
     pinMode(pin, INPUT_PULLUP);
 }
 
 boolean Button::isDown() {
     // Returns true if the button is pressed down; false otherwise
-    return digitalRead(pin);
+    return !digitalRead(pin);
 }
 
 boolean Button::isStateChanged() {

@@ -13,7 +13,7 @@ public:
 
 private:
     const int pin;
-    const boolean prevState;
-}
+    boolean prevState;
+};
 
 #endif
