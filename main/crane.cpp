@@ -44,17 +44,23 @@ boolean Crane::moveTo(float x, float y, int t /*= 1*/) {
 }
 
 boolean Crane::rotate(float angle) {
-    servoRotation.write((int)angle);
+    if (0 <= angle && angle <= 180) {
+        targetRotation = angle;
+        return true;
+    }
+    return false;
 }
 
-void Crane::attachServos(int pin1, int pin2) {
+void Crane::attachServos(int pinRotation, int pinShoulder, int pinElbow) {
     // Set the pin of each servo
-    servoShoulder.attach(pin1);
-    servoElbow.attach(pin2);
+    servoRotation.attach(pinRotation);
+    servoShoulder.attach(pinShoulder);
+    servoElbow.attach(pinElbow);
 }
 
 void Crane::update() {
     // Write to the servos
-    servoShoulder.write((int)targetAngle1);
-    servoElbow.write((int)targetAngle2);
+    servoShoulder.write(targetAngleShoulder);
+    servoElbow.write(targetAngleElbow);
+    servoRotation.write(targetRotation);
 }

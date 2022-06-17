@@ -1,3 +1,4 @@
+#include "button.h"
 #include "crane.h"
 
 //const int scaleFactor = 6;
@@ -12,22 +13,21 @@ Crane crane(13.7, 15);
 
 const int pinJoystickX = A1, pinJoystickY = A0;
 const int pinJoystickButton = 2;
-const int pinServo1 = 10, pinServo2 = 11;
+const int pinServoRotation = 9, pinServoShoulder = 10, pinServoElbow = 11;
+
+Button buttonJoystick(pinJoystickButton);
 
 void setup() {
     Serial.begin(9600);
 //    Serial.println("START");
-    crane.attachServos(pinServo1, pinServo2);
+    crane.attachServos(pinServoRotation, pinServoShoulder, pinServoElbow);
+
+    buttonJoystick.setPinMode();
 }
 
-float posX = 5, posY = 5;
+float posX = 5, posY = 5, rotation = 0;
 
-enum State {
-    moveXY,
-    moveRotation  
-};
-
-State state;
+boolean rotationMode = false;
 
 boolean joystickButtonPressed = false;
 
@@ -38,26 +38,25 @@ void loop() {
     Serial.println("======");
     Serial.println(dx);
     Serial.println(dy);
-//    crane.moveTo(x, y);
-//    crane.update();
-//    Serial.println(crane.targetAngle1);
 
-    if (state == State.moveXY) {
-        if ((dx > 0.1 || dx < 0.1 || dy > 0.1 || dy < 0.1) && crane.moveTo(posX+dx, posY+dy)) {
+    if (buttonJoystick.isStateChanged()) {
+        rotationMode = !rotationMode;
+    }
+
+    if (rotationMode) {
+        if (abs(dx) > 0.1 && crane.rotate(rotation + dx)) {
+            rotation += dx;
+            crane.update();
+        }
+    } else {
+        if ((abs(dx) > 0.1 || abs(dy) > 0.1) && crane.moveTo(posX+dx, posY+dy)) {
             posX += dx;
             posY += dy;
             crane.update();
         }  
-    } else if (state == State.moveRotation) {
-        
     }
-
-    
-
-    // Delay such that loop() loops every 20ms
+    // Delay such that loop() loops every 50ms
     delay(max(0, 50 - (millis() - startMillis)));
-
-    
 
 //    for (int i = 20; i < 80; i++) {
 //        crane.moveTo(i/4.0, 5);
@@ -81,10 +80,5 @@ void loop() {
 //        crane.moveTo(5, i/4.0);
 //        crane.update();
 //        delay(25);
-//    }
-//    for (int i = 100; i > 0; i--) {
-////        crane.servo1.write(i);
-//        Serial.println(i);
-//        delay(50);
 //    }
 }
