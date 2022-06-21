@@ -5,14 +5,10 @@ void Button::setPinMode() {
 }
 
 boolean Button::isDown() {
-    // Returns true if the button is pressed down; false otherwise
     return !digitalRead(pin);
 }
 
 boolean Button::isStateChanged() {
-    // Returns true if the button's state is on and different
-    // from the state the last time isStateChanged() was called;
-    // false otherwise
     const boolean down = isDown();
     const boolean changed = down && !prevState;
     prevState = down;

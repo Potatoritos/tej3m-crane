@@ -1,6 +1,6 @@
 #include "crane.h"
 
-// Boilerplate code for operators +=, +, -=, -, /=, /
+// Boilerplate code for overloading operators +=, +, -=, -, /=, /
 
 Position& Position::operator+=(const Position& other) {
     x += other.x;
@@ -39,6 +39,8 @@ const Position Position::operator/(const Position& other) const {
 
 void Crane::move(Position newPos, int durationTicks /* = 1 */) {
     moveRemainingSteps = durationTicks;
+
+    // Set dPos such that pos + dPos * durationTicks = newPos
     dPos = (newPos - pos) / durationTicks;
 }
 

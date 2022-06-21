@@ -23,7 +23,7 @@ public:
         length2(length2_)
     {}
 
-    //void move(float x, float y, float rotation, int durationTicks = 1);
+    // Starts moving the crane to a position
     void move(Position newPos, int durationTicks = 1);
 
     // Sets the position of the crane to (x, y)
@@ -34,11 +34,15 @@ public:
     // Does not set rotation if the angle is not valid
     void setRotation(float degrees);
 
-
     void attachServos(int, int, int);
+
+    // Writes to the crane's servos
     void update();
+
+    // Repeatedly call update() until a move is complete
     void updateUntilMoveDone();
 
+    // Getter method for the crane's position
     Position position();
 
 private:
@@ -49,6 +53,9 @@ private:
     const float length2;
 
     Position pos;
+    
+    // THe value to add to pos every update so that the crane reaches
+    // its target destination after an amount of ticks
     Position dPos;
 
     int moveRemainingSteps;
