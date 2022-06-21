@@ -4,30 +4,42 @@
 #include <Arduino.h>
 #include <Servo.h>
 
+struct Position {
+    float x, y, rotation;
+
+    Position& operator+=(const Position& other);
+    const Position operator+(const Position& other) const;
+    Position& operator-=(const Position& other);
+    const Position operator-(const Position& other) const;
+    Position& operator/=(const Position& other);
+    const Position operator/(const Position& other) const;
+};
+
+
 class Crane {
 public:
     Crane(float length1_, float length2_) :
         length1(length1_),
-        length2(length2_),
-        targetAngleShoulder(0),
-        targetAngleElbow(0),
-        targetRotation(0),
-        posX_(20),
-        posY_(10),
-        rotation_(0),
-        moveRemainingSteps(1)
+        length2(length2_)
     {}
 
-    void move(float, float, float, int = 1);
-    void setPositionAlongPlane(float, float);
-    void setRotation(float);
+    //void move(float x, float y, float rotation, int durationTicks = 1);
+    void move(Position newPos, int durationTicks = 1);
+
+    // Sets the position of the crane to (x, y)
+    // Returns without setting position if the position is invalid
+    void setPositionAlongPlane(float x, float y);
+    
+    // Sets the rotation of the crane
+    // Does not set rotation if the angle is not valid
+    void setRotation(float degrees);
+
+
     void attachServos(int, int, int);
     void update();
     void updateUntilMoveDone();
 
-    float posX();
-    float posY();
-    float rotation();
+    Position position();
 
 private:
     // Length of the edge between the shoulder and elbow
@@ -36,13 +48,9 @@ private:
     // Length of the edge between the elbow and wrist
     const float length2;
 
-    float posX_;
-    float posY_;
-    float rotation_;
+    Position pos;
+    Position dPos;
 
-    float moveDX;
-    float moveDY;
-    float moveDRotation;
     int moveRemainingSteps;
 
     float targetAngleShoulder;
