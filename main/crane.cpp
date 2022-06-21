@@ -24,14 +24,14 @@ const Position Position::operator-(const Position& other) const {
     return Position(*this) -= other;
 }
 
-Position& Position::operator/=(const Position& other) {
-    x /= other.x;
-    y /= other.y;
-    rotation /= other.rotation;
+Position& Position::operator/=(int other) {
+    x /= other;
+    y /= other;
+    rotation /= other;
     return *this;
 }
 
-const Position Position::operator/(const Position& other) const {
+const Position Position::operator/(int other) const {
     return Position(*this) /= other;
 }
 
@@ -125,6 +125,6 @@ void Crane::updateUntilMoveDone() {
     }
 }
 
-Position& Crane::position() {
+const Position& Crane::position() const {
     return pos;
 }

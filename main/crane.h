@@ -11,8 +11,8 @@ struct Position {
     const Position operator+(const Position& other) const;
     Position& operator-=(const Position& other);
     const Position operator-(const Position& other) const;
-    Position& operator/=(const Position& other);
-    const Position operator/(const Position& other) const;
+    Position& operator/=(int other);
+    const Position operator/(int other) const;
 };
 
 
@@ -43,7 +43,7 @@ public:
     void updateUntilMoveDone();
 
     // Getter method for the crane's position
-    Position position();
+    const Position& position() const;
 
 private:
     // Length of the edge between the shoulder and elbow
