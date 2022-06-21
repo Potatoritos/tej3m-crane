@@ -18,8 +18,9 @@ public:
         moveRemainingSteps(1)
     {}
 
-    boolean moveTo(float, float, int = 0);
-    boolean rotate(float);
+    void move(float, float, float, int = 1);
+    void setPositionAlongPlane(float, float);
+    void setRotation(float);
     void attachServos(int, int, int);
     void update();
     void updateUntilMoveDone();
@@ -41,6 +42,7 @@ private:
 
     float moveDX;
     float moveDY;
+    float moveDRotation;
     int moveRemainingSteps;
 
     float targetAngleShoulder;

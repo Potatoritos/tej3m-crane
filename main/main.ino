@@ -1,14 +1,6 @@
 #include "button.h"
 #include "crane.h"
 
-//const int scaleFactor = 6;
-//constexpr int operator"" _s(int n) {
-    //return n << scaleFactor;
-//}
-//constexpr long operator"" _s(long n) {
-    //return n << scaleFactor
-//}
-
 Crane crane(13.7, 15);
 
 const int pinJoystickX = A1, pinJoystickY = A0;
@@ -24,7 +16,7 @@ void setup() {
 //    Serial.println("START");
     crane.attachServos(pinServoRotation, pinServoShoulder, pinServoElbow);
 
-    crane.moveTo(20, 10);
+    crane.move(20, 10, 0);
     crane.update();
 
     buttonJoystick.setPinMode();
@@ -39,7 +31,7 @@ float savedPosX = 20, savedPosY = 10, savedRotation;
 boolean saveMode = true;
 
 void loop() {
-    long startMillis = millis();
+    const long startMillis = millis();
     float dx = -analogRead(pinJoystickX)/2000.0 + 0.256;
     float dy = analogRead(pinJoystickY)/2000.0 - 0.256;
 
@@ -62,46 +54,24 @@ void loop() {
            savedPosY = crane.posY();
            savedRotation = crane.rotation();
         } else {
-            crane.moveTo(savedPosX, savedPosY);
-            crane.rotate(savedRotation);
-            crane.update();
+            crane.move(savedPosX, savedPosY, savedRotation, 20);
+            crane.updateUntilMoveDone();
         }
         saveMode = !saveMode;
     }
 
     if (rotationMode) {
-        if (abs(dx) > 0.1 && crane.rotate(crane.rotation() - dx*4)) {
-            crane.update();
+        if (abs(dx) > 0.1) {
+            crane.move(crane.posX(), crane.posY(), crane.rotation() - dx*4);
         }
     } else {
-        if ((abs(dx) > 0.1 || abs(dy) > 0.1) && crane.moveTo(crane.posX()-dx, crane.posY()+dy)) {
-            crane.update();
-        }  
+        if (abs(dx) > 0.1 || abs(dy) > 0.1) {
+            crane.move(crane.posX() - dx, crane.posY() + dy, crane.rotation());
+        }
     }
-    // Delay such that loop() loops every 50ms
-    delay(max(0, 50 - (millis() - startMillis)));
 
-//    for (int i = 20; i < 80; i++) {
-//        crane.moveTo(i/4.0, 5);
-//        crane.update();
-//        delay(25);
-//    }
-//
-//    for (int i = 20; i < 80; i++) {
-//        crane.moveTo(20, i/4.0);
-//        crane.update();
-//        delay(25);
-//    }
-//    
-//    for (int i = 80; i > 20; i--) {
-//        crane.moveTo(i/4.0, 20);
-//        crane.update();
-//        delay(25);
-//    }
-//
-//    for (int i = 80; i > 20; i--) {
-//        crane.moveTo(5, i/4.0);
-//        crane.update();
-//        delay(25);
-//    }
+    crane.update();
+
+    // Delay such that loop() loops every 50ms
+    delay(max(0L, 50L - min(50, millis() - startMillis)));
 }

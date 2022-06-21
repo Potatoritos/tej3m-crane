@@ -1,12 +1,19 @@
 #include "crane.h"
 
-boolean Crane::moveTo(float x, float y, int t /*= 1*/) {
-    // Moves the crane to the coordinates (x, y)
-    // Returns true if moving is possible; false otherwise
+void Crane::move(float x, float y, float rotation, int durationTicks /* = 1 */) {
+    moveRemainingSteps = durationTicks;
+    moveDX = (x - posX_) / durationTicks;
+    moveDY = (y - posY_) / durationTicks;
+    moveDRotation = (rotation - rotation_) / durationTicks;
+}
 
-    // Restrict movement to 1st quadrant
+void Crane::setPositionAlongPlane(float x, float y) {
+    // Sets the position of the crane to (x, y) on the plane
+    // Returns without moving the crane if the move is not valid
+
+    // Restrict movement to the 1st quadrant
     if (x <= 0 || y <= 0) {
-        return false;
+        return;
     }
 
     // Let C1 be the circle with length length1 centered at the origin
@@ -21,9 +28,9 @@ boolean Crane::moveTo(float x, float y, int t /*= 1*/) {
 
     const float discriminant = b*b - 4*a*c;
 
-    // If there is no point of intersection
+    // Return if there is no point of intersection
     if (discriminant < 0) {
-        return false;
+        return;
     }
     
     const float xPOI = (-b - sqrt(discriminant)) / (2 * a);
@@ -39,45 +46,50 @@ boolean Crane::moveTo(float x, float y, int t /*= 1*/) {
     targetAngleElbow = 180 - (targetAngleShoulder - targetAngleElbow) - 12;
     targetAngleShoulder = targetAngleShoulder - 20;
     
-    moveRemainingSteps = 8 * t;
-    moveDX = x - posX_;
-    moveDY = y - posY_;
-
-    
     posX_ = x;
     posY_ = y;
-    return true;
 }
 
-boolean Crane::rotate(float angle) {
-    if (0 <= angle && angle <= 180) {
-        targetRotation = angle;
-        rotation_ = angle;
-        return true;
+void Crane::setRotation(float degrees) {
+    // Sets the rotation of the crane to degrees
+    // Does not set rotation if degrees is not valid
+    if (0 <= degrees && degrees <= 180) {
+        targetRotation = degrees;
+        rotation_ = degrees;
     }
-    return false;
 }
 
 void Crane::attachServos(int pinRotation, int pinShoulder, int pinElbow) {
-    // Set the pin of each servo
+    // Attach each servo
     servoRotation.attach(pinRotation);
     servoShoulder.attach(pinShoulder);
     servoElbow.attach(pinElbow);
 }
 
-
-
 void Crane::update() {
     // Write to the servos
-    servoShoulder.write(targetAngleShoulder);
-    servoElbow.write(targetAngleElbow);
-    servoRotation.write(targetRotation);
+    if (moveRemainingSteps) {
+        moveRemainingSteps--;
+
+        setPositionAlongPlane(posX_ + moveDX, posY_ + moveDY);
+        setRotation(rotation_ + moveDRotation);
+
+        servoShoulder.write(targetAngleShoulder);
+        servoElbow.write(targetAngleElbow);
+        servoRotation.write(targetRotation);
+    }
 }
 
 void Crane::updateUntilMoveDone() {
     while (moveRemainingSteps) {
+        Serial.println(moveRemainingSteps);
+        const long startMillis = millis();
         update();
+        // Delay such that loop() loops every 50ms
+        Serial.println(max(0, 50 - (millis() - startMillis)));
+        delay(max(0, 50 - (millis() - startMillis)));
     }
+        Serial.println(moveRemainingSteps);
 }
 
 float Crane::posX() {
