@@ -68,10 +68,10 @@ void Crane::setPositionAlongPlane(float x, float y) {
     const float xPOI = (-b - sqrt(discriminant)) / (2 * a);
     const float yPOI = sqrt(l1 - xPOI * xPOI);
     
-    // The angle servo1 should be at such that servo2 reaches (xPOI, yPOI)
+    // The angle servoShoulder should be at such that servoElbow reaches (xPOI, yPOI)
     targetAngleShoulder = acos(xPOI / length1) * RAD_TO_DEG;
     
-    // The angle servo2 should be at such that the end of the crane reaches (x, y)
+    // The angle servoElbow should be at such that the end of the crane reaches (x, y)
     targetAngleElbow = atan2(y - yPOI, x - xPOI) * RAD_TO_DEG;
 
     // The actual angles to write to the servos
