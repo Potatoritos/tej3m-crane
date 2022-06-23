@@ -8,4 +8,4 @@ Desmos model: https://www.desmos.com/calculator/hcltd6ieoa
 # Demo of older version
 (rotation not yet implemented at the time of recording)
 
-https://user-images.githubusercontent.com/32649997/175336532-7d47a2f8-6eff-4212-978e-370c072d9c66.MOV
+https://user-images.githubusercontent.com/32649997/175381918-64fcafe1-a3fd-48f7-8ee0-b7dbb03bf068.mov
