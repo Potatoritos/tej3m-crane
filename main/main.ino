@@ -3,13 +3,13 @@
 TEJ3M Final Project - Crane
 by Elliott Cheng and Brendan Tam
 
-A robot arm that is controlled by a joystick and a button.
+A robot arm that is controlled by two joysticks.
 
-The joystick button toggles controls between two modes: rotation mode and move mode.
-In move mode, the joystick controls the x-y coordinates of the tip of the arm.
-In rotation mode, the joystick controls the rotation of the arm.
+The left joystick controls the arm's rotation, and
+the right joystick controls the arm's x-y coordinates.
 
-Pressing the button once saves the arm's current position; pressing it again moves
+Pressing each joystick button once independently saves
+the arm's current position; pressing it again moves
 the arm back to the saved position.
 
 */
@@ -20,20 +20,15 @@ the arm back to the saved position.
 
 #include <EEPROM.h>
 
-const int pinJoystickX = A1, pinJoystickY = A0;
-const int pinJoystickButton = 2;
-const int pinSaveButton = 13;
+const int pinJoystickX = A1, pinJoystickY = A0, pinJoystickRotation = A2;
+const int pinJoystickButton1 = 2, pinJoystickButton2 = 13;
 const int pinServoRotation = 9, pinServoShoulder = 10, pinServoElbow = 11;
 
-Crane crane(13.7, 15);
+Crane crane(13.7, 14.5);
 
-Button buttonJoystick(pinJoystickButton);
-Button buttonSave(pinSaveButton);
-
-Position savedPosition;
-
-boolean rotationMode = false;
-boolean saveMode = true;
+Button saveButtons[] = {Button(pinJoystickButton1), Button(pinJoystickButton2)};
+Position savedPositions[2];
+boolean saveModes[] = {true, true};
 
 int writePosCounter = 0;
 
@@ -42,17 +37,23 @@ void setup() {
 
     // Set up crane and button pins
     crane.attachServos(pinServoRotation, pinServoShoulder, pinServoElbow);
-    buttonJoystick.setPinMode();
-    buttonSave.setPinMode();
+
+    for (Button &button : saveButtons) {
+        button.setPinMode();
+    }
 
     // Get initial position from EEPROM
     Position initialPosition;
     EEPROM.get(0, initialPosition);
 
-    Serial.println("Read from EEPROM");
-    Serial.print("x: "); Serial.println(initialPosition.x);
-    Serial.print("y: "); Serial.println(initialPosition.y);
-    Serial.print("r: "); Serial.println(initialPosition.rotation);
+    // Set initial position to default value if
+    // value from EEPROM is NaN
+    if (initialPosition.x != initialPosition.x) {
+        initialPosition.x = 20;
+    }
+    if (initialPosition.y != initialPosition.y) {
+        initialPosition.y = 10;
+    }
 
     // Set the crane's position to initialPosition
     crane.move(initialPosition);
@@ -66,36 +67,28 @@ void setup() {
 void loop() {
     const long startMillis = millis();
 
-    // Toggle rotationMode when the joystick button is pressed
-    if (buttonJoystick.isStateChanged()) {
-        rotationMode = !rotationMode;
-    }
-
     // Save position / move to saved position when the save button is pressed
-    if (buttonSave.isStateChanged()) {
-        Serial.print("Save button pressed: ");
-        Serial.println(saveMode);
-        if (saveMode) {
-            savedPosition = Position(crane.position());
-        } else {
-            crane.move(savedPosition, 20);
-            crane.updateUntilMoveDone();
+    for (int i = 0; i <= 1; i++) {
+        if (saveButtons[i].isStateChanged()) {
+            if (saveModes[i]) {
+                savedPositions[i] = Position(crane.position());
+            } else {
+                crane.move(savedPositions[i], 15);
+                crane.updateUntilMoveDone();
+            }
+            saveModes[i] = !saveModes[i];
         }
-        saveMode = !saveMode;
     }
 
-    // Get x and y input from joystick
-    float dx = analogRead(pinJoystickX)/2000.0 + 0.256;
+    // Get input from joysticks
+    float dx = analogRead(pinJoystickX)/2000.0 - 0.256;
     float dy = analogRead(pinJoystickY)/2000.0 - 0.256;
 
-    if (rotationMode) {
-        // Rotate if rotationMode is true and if dx is above a certain threshold
-        if (abs(dx) > 0.1) {
-            crane.move(crane.position() + Position({0, 0, dx*4}));
-        }
-    } else if (abs(dx) > 0.1 || abs(dy) > 0.1) {
-        // Move if rotationMode is false and both dx and dy are above a certain threshold
-        crane.move(crane.position() + Position({dx, dy, 0}));
+    float dRotation = analogRead(pinJoystickRotation)/2000.0 - 0.256;
+
+    // Move if |dx|, |dy|, or |dRotation| is above a certain threshold
+    if (abs(dx) > 0.1 || abs(dy) > 0.1 || abs(dRotation) > 0.1) {
+        crane.move(crane.position() + Position({-dx, -dy, 5*dRotation}));
     }
 
     // Write to the crane's servos
@@ -104,10 +97,6 @@ void loop() {
     // Save position to EEPROM once every ~3 seconds
     writePosCounter++;
     if (!(writePosCounter &= 63)) {
-        Serial.println("Writing to EEPROM");
-        Serial.print("x: "); Serial.println(crane.position().x);
-        Serial.print("y: "); Serial.println(crane.position().y);
-        Serial.print("r: "); Serial.println(crane.position().rotation);
         EEPROM.put(0, crane.position());
     }
 

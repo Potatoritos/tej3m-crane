@@ -1,7 +1,6 @@
 #include "crane.h"
 
 // Boilerplate code for overloading operators +=, +, -=, -, /=, /
-
 Position& Position::operator+=(const Position& other) {
     x += other.x;
     y += other.y;
@@ -34,7 +33,6 @@ Position& Position::operator/=(int other) {
 const Position Position::operator/(int other) const {
     return Position(*this) /= other;
 }
-
 
 
 void Crane::move(Position newPos, int durationTicks /* = 1 */) {
@@ -79,13 +77,14 @@ void Crane::setPositionAlongPlane(float x, float y) {
     // The actual angles to write to the servos
     targetAngleElbow = 180 - (targetAngleShoulder - targetAngleElbow) - 12;
     targetAngleShoulder = targetAngleShoulder - 20;
-    
+
     // Update position
     pos.x = x;
     pos.y = y;
 }
 
 void Crane::setRotation(float degrees) {
+    // Restrict rotation to the interval [0, 180]
     if (0 <= degrees && degrees <= 180) {
         targetRotation = degrees;
         pos.rotation = degrees;
@@ -100,6 +99,7 @@ void Crane::attachServos(int pinRotation, int pinShoulder, int pinElbow) {
 }
 
 void Crane::update() {
+    // Only write to servos if there are still remaining steps
     if (moveRemainingSteps) {
         moveRemainingSteps--;
 

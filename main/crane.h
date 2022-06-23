@@ -7,6 +7,7 @@
 struct Position {
     float x, y, rotation;
 
+    // Overload basic arithmetic operations
     Position& operator+=(const Position& other);
     const Position operator+(const Position& other) const;
     Position& operator-=(const Position& other);
@@ -34,6 +35,7 @@ public:
     // Does not set rotation if the angle is not valid
     void setRotation(float degrees);
 
+    // Attach all servos to their respective pins
     void attachServos(int, int, int);
 
     // Writes to the crane's servos
@@ -52,14 +54,17 @@ private:
     // Length of the edge between the elbow and wrist
     const float length2;
 
+    // The crane's current position
     Position pos;
     
-    // THe value to add to pos every update so that the crane reaches
+    // The value to add to pos every update so that the crane reaches
     // its target destination after an amount of ticks
     Position dPos;
 
+    // The amount of ticks remaining for the current move
     int moveRemainingSteps;
 
+    // The values to write to the servos
     float targetAngleShoulder;
     float targetAngleElbow;
     float targetRotation;
